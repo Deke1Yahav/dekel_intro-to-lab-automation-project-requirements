@@ -26,7 +26,8 @@
  - push the file to your repo.
 
 ## Exercise
-- pressure value: 
-- led blinks when:
-- led is constant when:
-- buzzer plays when: 
+- status: Finished updating the #sym:Exercise section.
+- pressure value: 100450
+- led blinks when: I long press it
+- led is constant when:In the changing mode
+- buzzer plays when: entering changing mode
