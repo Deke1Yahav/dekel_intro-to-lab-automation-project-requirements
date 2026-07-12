@@ -21,4 +21,4 @@
  - no need to commit anything in this project
 
 ## Results
-- LED blinks when: 
+- LED blinks when: the red LED is connected to pin D4 and the Blink sketch is running.
