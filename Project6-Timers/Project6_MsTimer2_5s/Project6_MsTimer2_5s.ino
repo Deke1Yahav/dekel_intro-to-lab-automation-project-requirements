@@ -3,7 +3,7 @@
 const byte ledPin = 4;
 const byte buttonPin = 6;
 const byte interruptPin = 2;
-const unsigned long ledOnDurationMs = 5000;
+const unsigned long ledOnDurationMs = 30;
 
 void turnOffLed() {
   // This callback runs when the MsTimer2 timer expires.
@@ -23,7 +23,7 @@ void setup() {
   pinMode(interruptPin, INPUT);
   digitalWrite(ledPin, LOW);
 
-  // Prepare the timer to call turnOffLed() after 5 seconds.
+  // Prepare the timer to call turnOffLed() after ledOnDurationMs.
   MsTimer2::set(ledOnDurationMs, turnOffLed);
   MsTimer2::stop();
 

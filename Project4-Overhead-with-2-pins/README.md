@@ -13,7 +13,7 @@
 - measure the delay between the two digitalWrite() functions using the logic analyzer.
 Paste screenshots below:
 
-enter the delay in usec here:  __________
+enter the delay in usec here:  __________![alt text](Blink_D4_1ms/13_12_delay_no_calculation.png)
 
 ## write a 2nd program that does the following:
 - based on the first program, add any calculation (adding one to an additional variable for example) and store the result in a variable between the two digitalWrite() functions.
@@ -23,10 +23,11 @@ enter the delay in usec here:  __________
 Paste screenshots below:
 
 enter the delay in usec here:  __________
-
+![alt text](Blink_D4_1ms_withCalculation/dt_between_13_and_12__with_calculation_3.78.png)
 ## Exercise 3
 - Use chatGPT or similar to find how to write simultaneously to both pins. Measure the delay between the pins now. 
 - Paste a screenshot below.
+- ![alt text](Blink_D4_1ms_simultaneousWrite/13_12_simultaneous.png)
 - Comparison of AI changes if any:
 
 ## Git

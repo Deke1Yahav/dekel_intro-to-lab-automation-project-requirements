@@ -23,14 +23,20 @@ for (int i = 0; i< 10000; i++){
 ```
 - test if lighting led still works. Why or why not?
 answer here: __________
+loop() reads the button once
+then it spends a long time printing calculating... 10,000 times
+while it is doing that, it does not read the button again
+so the LED cannot react immediately
 
 ## Use interrupt to light led
 - Add code to create an interrupt pin (why can't it be the button pin?). Use a variable for this.
 - Short the interrupt pin with the button pin
 - test. Does it work?
+- yes
 
 ## Exercises
  - Comparison of AI changes if any:
+ - The AI helped organize the code into separate sketches for polling and interrupt behavior. It also added Serial debug output, the long calculation loop, and the interrupt-based version using interruptPin = 2 so the button press can still be detected while the loop is busy.
  - commit and upload your code in this project folder.
 
 
