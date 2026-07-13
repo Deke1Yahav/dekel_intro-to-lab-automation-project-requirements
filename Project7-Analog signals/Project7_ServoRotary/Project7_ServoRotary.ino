@@ -12,7 +12,7 @@ void setup() {
 
 void loop() {
   int rotaryValue = analogRead(rotaryPin);
-  int angle = map(rotaryValue, 0, 1023, 0, 180);
+  int angle = map(rotaryValue, 0, 1023, 10, 170);
   myServo.write(angle);
 
   Serial.println(angle);
