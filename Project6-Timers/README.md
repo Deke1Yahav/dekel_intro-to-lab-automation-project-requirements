@@ -29,3 +29,4 @@ answer here: Yes. The LED still turns off after 5 seconds because the timer work
 - change the LED time ON from 5 seconds to 30 ms, measure in the scope the time the LED is ON. is it 30 ms? Why or why not?
 answer here: Not exactly. The measured time is usually a little longer than 30 ms because of timer resolution and interrupt overhead.
 paste a screen shot from the scope below:
+[text](README.md)![alt text](Project6_MsTimer2_5s/bunsing.png)
