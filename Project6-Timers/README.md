@@ -11,7 +11,7 @@ paste a screen shot from the logic analyzer below:
  
 ## update the code to add a delay in the loop function
 - Add the same for loop as in the previous exercise to simulate a long process. Does the LED still turn off after 5 seconds? Why or why not?
-answer here: __________
+answer here: __________No. The LED will not turn off exactly after 5 seconds, because the long for loop blocks the loop function and delays the next millis() check. The LED will stay on until the code gets back to the turn-off test.
 add a screen shot from the logic analyzer below:
 
 ## Write a second program. The proper way to solve this problem is to use a timer
@@ -24,7 +24,8 @@ add a screen shot from the logic analyzer below:
 ## Exercises
  - Comparison of AI changes if any:
 - check that although the delay of 1 second is still in the loop function, the LED now turns off after 5 seconds
+answer here: Yes. The LED still turns off after 5 seconds because the timer works independently from the loop code.
 
 - change the LED time ON from 5 seconds to 30 ms, measure in the scope the time the LED is ON. is it 30 ms? Why or why not?
-answer here: __________
+answer here: Not exactly. The measured time is usually a little longer than 30 ms because of timer resolution and interrupt overhead.
 paste a screen shot from the scope below:
