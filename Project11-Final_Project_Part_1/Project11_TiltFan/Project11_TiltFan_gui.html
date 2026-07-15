@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Project 11 - Fan Monitor</title>
+<style>
+  :root {
+    --bg: #eef2f7;
+    --paper: #ffffff;
+    --ink: #163a63;
+    --ink-dim: #4d6f97;
+    --line: rgba(22,58,99,0.28);
+    --line-strong: rgba(22,58,99,0.5);
+    --accent: #b8720a;
+    --good: #2f8f5b;
+    --alert: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c1a2e;
+      --paper: #122542;
+      --ink: #eaf2ff;
+      --ink-dim: #9fb7d8;
+      --line: rgba(234,242,255,0.25);
+      --line-strong: rgba(234,242,255,0.45);
+      --accent: #ffb454;
+      --good: #6fcf97;
+      --alert: #ff7a7a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  .subtitle { color: var(--ink-dim); font-size: 13px; margin: 0 0 22px; }
+  .mono { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .panel {
+    border: 1.5px solid var(--line-strong);
+    background: var(--paper);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .row + .row { margin-top: 12px; }
+  label { font-size: 12px; color: var(--ink-dim); }
+  .field {
+    border: 1px solid var(--line-strong);
+    padding: 6px 10px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 12.5px;
+    background: var(--bg);
+    color: var(--ink);
+    min-width: 90px;
+  }
+  button {
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button.ghost { background: transparent; color: var(--ink-dim); border-color: var(--line-strong); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  #status { font-size: 12.5px; color: var(--ink-dim); }
+  #status.error { color: var(--alert); font-weight: 600; }
+
+  .body-grid {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 26px;
+    align-items: start;
+  }
+  .dial-col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .dial {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    position: relative;
+    background: conic-gradient(var(--good) 0deg 30deg, var(--alert) 30deg 330deg, var(--good) 330deg 360deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dial::before {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: var(--paper);
+  }
+  .needle {
+    position: absolute;
+    width: 3px;
+    height: 66px;
+    background: var(--ink);
+    top: 13px;
+    left: 50%;
+    margin-left: -1.5px;
+    transform-origin: 50% 66px;
+    transform: rotate(0deg);
+    border-radius: 2px;
+    transition: transform 0.12s linear, background-color 0.12s linear;
+  }
+  .hub-dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--ink); z-index: 2; }
+  .readout { position: relative; z-index: 1; font-family: ui-monospace, Consolas, monospace; font-size: 20px; font-weight: 700; }
+  .dial-caption { font-size: 11px; color: var(--ink-dim); text-align: center; }
+
+  .led-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border: 1px solid var(--line-strong);
+  }
+  .led-chip i {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 0 3px rgba(47,143,91,0.25);
+  }
+  .led-chip.alarm i { background: var(--alert); box-shadow: 0 0 6px 2px rgba(192,57,43,0.55); }
+
+  .right-col { display: flex; flex-direction: column; gap: 14px; }
+  .chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .sparkline-wrap { border: 1px solid var(--line); padding: 10px 12px; }
+  .sparkline-wrap .cap { font-size: 11px; color: var(--ink-dim); margin-bottom: 6px; }
+  #history { display: block; width: 100%; height: 64px; }
+
+  .log-strip {
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--paper);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+  .note b { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Project 11 &mdash; Fan Monitor</h1>
+  <p class="subtitle">Connects directly to the Arduino over Web Serial. No Python required &mdash; open this file in Chrome or Edge.</p>
+
+  <div class="panel">
+    <div class="row">
+      <button id="connectBtn" type="button">Connect</button>
+      <button id="disconnectBtn" type="button" class="ghost" disabled>Disconnect</button>
+      <label>Baud</label><div class="field">9600</div>
+      <span id="status">Not connected.</span>
+    </div>
+    <div class="row">
+      <button id="chooseLogBtn" type="button" class="ghost">Choose log file&hellip;</button>
+      <button id="downloadLogBtn" type="button" class="ghost" disabled>Download CSV</button>
+      <span id="logMode" style="font-size:12px; color:var(--ink-dim);"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="body-grid">
+      <div class="dial-col">
+        <div class="dial">
+          <div class="needle" id="needle"></div>
+          <div class="hub-dot"></div>
+          <span class="readout" id="readout">--</span>
+        </div>
+        <div class="dial-caption">tilt angle &middot; <b>green</b> = safe, <b>red</b> = past &plusmn;30&deg;</div>
+        <div class="led-chip" id="fanChip"><i></i><span class="label">NO DATA</span></div>
+      </div>
+
+      <div class="right-col">
+        <div class="chip-row">
+          <div class="led-chip" id="buzzChip"><i></i><span class="label">NO DATA</span></div>
+        </div>
+
+        <div class="sparkline-wrap">
+          <div class="cap">angle, last ~30s</div>
+          <svg id="history" viewBox="0 0 300 64" preserveAspectRatio="none"></svg>
+        </div>
+
+        <div class="log-strip">
+          <span id="logFileName">no log file chosen</span>
+          <span id="rowCount">0 rows written</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>CSV logging:</b> in Chrome/Edge, "Choose log file&hellip;" writes each row to disk as it arrives
+    (via the File System Access API). If that's not available, use "Download CSV" once you're done &mdash;
+    rows are kept in memory and saved as a single file on demand.
+  </div>
+</main>
+
+<script>
+(function () {
+  var TILT_THRESHOLD_DEG = 30;
+  var HISTORY_LENGTH = 120;
+
+  var port = null;
+  var reader = null;
+  var readableStreamClosed = null;
+  var keepReading = false;
+
+  var logWritable = null;   // File System Access API stream, when available
+  var fallbackRows = [];    // used when the API isn't available
+  var rowsWritten = 0;
+  var connectStartTime = null;
+  var history = [];
+
+  var connectBtn = document.getElementById('connectBtn');
+  var disconnectBtn = document.getElementById('disconnectBtn');
+  var statusEl = document.getElementById('status');
+  var chooseLogBtn = document.getElementById('chooseLogBtn');
+  var downloadLogBtn = document.getElementById('downloadLogBtn');
+  var logModeEl = document.getElementById('logMode');
+  var logFileNameEl = document.getElementById('logFileName');
+  var rowCountEl = document.getElementById('rowCount');
+  var needle = document.getElementById('needle');
+  var readout = document.getElementById('readout');
+  var fanChip = document.getElementById('fanChip');
+  var buzzChip = document.getElementById('buzzChip');
+  var historySvg = document.getElementById('history');
+
+  function setStatus(text, isError) {
+    statusEl.textContent = text;
+    statusEl.classList.toggle('error', !!isError);
+  }
+
+  function signed(n, decimals) {
+    return (n >= 0 ? '+' : '') + n.toFixed(decimals);
+  }
+
+  function updateVisuals(angleDeg, alarm) {
+    needle.style.transform = 'rotate(' + angleDeg + 'deg)';
+    needle.style.background = alarm ? 'var(--alert)' : 'var(--ink)';
+    readout.textContent = signed(angleDeg, 1) + '°';
+    readout.style.color = alarm ? 'var(--alert)' : 'var(--ink)';
+
+    fanChip.classList.toggle('alarm', alarm);
+    fanChip.querySelector('.label').textContent = alarm ? 'FAN OFF' : 'FAN ON';
+    buzzChip.classList.toggle('alarm', alarm);
+    buzzChip.querySelector('.label').textContent = alarm ? 'BUZZER SOUNDING' : 'BUZZER SILENT';
+
+    history.push(angleDeg);
+    if (history.length > HISTORY_LENGTH) history.shift();
+    drawHistory();
+  }
+
+  function drawHistory() {
+    while (historySvg.firstChild) historySvg.removeChild(historySvg.firstChild);
+    if (history.length < 2) return;
+
+    var w = 300, h = 64, lo = -90, hi = 90;
+    var mid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    mid.setAttribute('x1', 0); mid.setAttribute('y1', h / 2);
+    mid.setAttribute('x2', w); mid.setAttribute('y2', h / 2);
+    mid.setAttribute('stroke', 'var(--line)'); mid.setAttribute('stroke-width', '1');
+    mid.setAttribute('stroke-dasharray', '3 4');
+    historySvg.appendChild(mid);
+
+    var points = history.map(function (angle, i) {
+      var x = (i / (history.length - 1)) * w;
+      var y = h - ((angle - lo) / (hi - lo)) * h;
+      return x + ',' + y;
+    });
+    var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    poly.setAttribute('points', points.join(' '));
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', 'var(--accent)');
+    poly.setAttribute('stroke-width', '2');
+    poly.setAttribute('stroke-linecap', 'round');
+    poly.setAttribute('stroke-linejoin', 'round');
+    historySvg.appendChild(poly);
+
+    var last = points[points.length - 1].split(',');
+    var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('cx', last[0]); dot.setAttribute('cy', last[1]); dot.setAttribute('r', 3.5);
+    dot.setAttribute('fill', 'var(--accent)');
+    historySvg.appendChild(dot);
+  }
+
+  function parseLine(line) {
+    var parts = line.split(',');
+    if (parts.length !== 2) return null;
+    var angle = parseFloat(parts[0]);
+    if (isNaN(angle)) return null;
+    var alarm = parts[1].trim() === '1';
+    return { angle: angle, alarm: alarm };
+  }
+
+  async function appendLogRow(elapsedS, angleDeg, alarm) {
+    var row = elapsedS.toFixed(3) + ',' + angleDeg.toFixed(1) + ',' + (alarm ? 1 : 0) + '\n';
+    if (logWritable) {
+      await logWritable.write(row);
+    } else {
+      fallbackRows.push(row);
+    }
+    rowsWritten += 1;
+    rowCountEl.textContent = rowsWritten + ' rows written';
+  }
+
+  function handleLine(line) {
+    line = line.trim();
+    if (!line) return;
+    var parsed = parseLine(line);
+    if (!parsed) return; // ignore malformed/partial lines rather than crash
+
+    updateVisuals(parsed.angle, parsed.alarm);
+    var elapsedS = (Date.now() - connectStartTime) / 1000;
+    appendLogRow(elapsedS, parsed.angle, parsed.alarm);
+  }
+
+  async function readLoop() {
+    var textDecoder = new TextDecoderStream();
+    readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+    reader = textDecoder.readable.getReader();
+    var buffer = '';
+
+    try {
+      while (keepReading) {
+        var result = await reader.read();
+        if (result.done) break;
+        buffer += result.value;
+        var lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (var i = 0; i < lines.length; i++) handleLine(lines[i]);
+      }
+    } catch (err) {
+      setStatus('Read error: ' + err.message + ' - click Connect to resume.', true);
+    } finally {
+      reader.releaseLock();
+      keepReading = false;
+      connectBtn.disabled = false;
+      disconnectBtn.disabled = true;
+    }
+  }
+
+  async function connect() {
+    if (!('serial' in navigator)) {
+      setStatus('Web Serial is not supported in this browser. Use Chrome or Edge.', true);
+      return;
+    }
+    try {
+      port = await navigator.serial.requestPort();
+      // A larger receive buffer avoids "Buffer overrun" errors if the read loop
+      // ever lags behind the incoming stream (Chrome's default is only 255 bytes).
+      await port.open({ baudRate: 9600, bufferSize: 4096 });
+    } catch (err) {
+      setStatus('Could not open port: ' + err.message, true);
+      return;
+    }
+
+    connectStartTime = Date.now();
+    history = [];
+    keepReading = true;
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+    setStatus('Connected.');
+    readLoop();
+  }
+
+  async function disconnect() {
+    keepReading = false;
+    try {
+      if (reader) await reader.cancel();
+      if (readableStreamClosed) await readableStreamClosed.catch(function () {});
+      if (port) await port.close();
+    } catch (err) {
+      setStatus('Error while disconnecting: ' + err.message, true);
+    }
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    setStatus('Disconnected.');
+  }
+
+  async function chooseLogFile() {
+    if (!('showSaveFilePicker' in window)) {
+      setStatus('This browser cannot write files directly; use "Download CSV" instead.', true);
+      return;
+    }
+    try {
+      var suggested = 'project11_log_' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.csv';
+      var handle = await window.showSaveFilePicker({
+        suggestedName: suggested,
+        types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }],
+      });
+      logWritable = await handle.createWritable();
+      await logWritable.write('elapsed_s,angle_deg,buzzer_state\n');
+      rowsWritten = 0;
+      rowCountEl.textContent = '0 rows written';
+      logFileNameEl.textContent = handle.name;
+      logModeEl.textContent = 'writing live to disk';
+      downloadLogBtn.disabled = true;
+    } catch (err) {
+      if (err.name !== 'AbortError') setStatus('Could not open log file: ' + err.message, true);
+    }
+  }
+
+  function downloadFallbackCsv() {
+    var header = 'elapsed_s,angle_deg,buzzer_state\n';
+    var blob = new Blob([header].concat(fallbackRows), { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'project11_log_' + Date.now() + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  connectBtn.addEventListener('click', connect);
+  disconnectBtn.addEventListener('click', disconnect);
+  chooseLogBtn.addEventListener('click', chooseLogFile);
+  downloadLogBtn.addEventListener('click', downloadFallbackCsv);
+
+  if (!('showSaveFilePicker' in window)) {
+    downloadLogBtn.disabled = false;
+    logModeEl.textContent = 'buffering in memory (no File System Access API)';
+  }
+  drawHistory();
+})();
+</script>
+</body>
+</html>
