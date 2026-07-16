@@ -1,5 +1,11 @@
 # Final Project Preparation: Closed-Loop Temperature Control
 
+## Current Implementation
+
+We are building the automation that updates the heater power based on the temperature error (setpoint − measured temperature).
+
+The most up-to-date sketch is [`auto_PID_heatcontrol_with_temp_read_copy_20260716142933/auto_PID_heatcontrol_with_temp_read_copy_20260716142933.ino`](auto_PID_heatcontrol_with_temp_read_copy_20260716142933/auto_PID_heatcontrol_with_temp_read_copy_20260716142933.ino).
+
 ## Reference Materials
 
 ### Terms
